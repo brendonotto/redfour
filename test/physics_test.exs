@@ -3,6 +3,10 @@ defmodule PhysicsTest do
   doctest Physics
 
   test "the truth" do
-      assert 1 + 1 == 2    
+      assert 1 + 1 == 2
+  end
+
+  test "escape velocity" do
+    assert Physics.Rocketry.escape_velocity(:earth) == 11.2
   end
 end
