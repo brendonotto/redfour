@@ -1,31 +1,62 @@
-defmodule Calcs do
-  def rounded_to_nearest_tenth(val) do
-    Float.ceil(val, 1)
-  end
-
-  def convert_to_km(velocity) do
-    velocity / 1000
-  end
-end
-
 defmodule Physics.Rocketry do
 
+  import Calcs
+  import Physics.Laws
+
   def escape_velocity(:earth) do
-    %{mass: 5.972e24, radius: 6.371e6}
+    Planets.earth
       |> escape_velocity
   end
 
   def escape_velocity(planet) when is_map(planet) do
     planet
       |> calculate_escape
-      |> Calcs.convert_to_km
-      |> Calcs.rounded_to_nearest_tenth
+      |> to_km
+      |> to_nearest_tenth
+  end
+
+
+  def orbital_acceleration(height), do: orbital_acceleration(Planets.earth, height)
+  def orbital_acceleration(:earth, height), do: orbital_acceleration(Planets.earth, height)
+  def orbital_acceleration(:mars, height), do: orbital_acceleration(Planets.mars, height)
+  def orbital_acceleration(:moon, height), do: orbital_acceleration(Planets.moon, height)
+  def orbital_acceleration(planet, height) do
+    (orbital_speed(planet, height) |> squared) / orbital_radius(planet, height)
+  end
+
+  def orbital_term(height), do: orbital_term(Planets.earth, height)
+  def orbital_term(:earth, height), do: orbital_term(Planets.earth, height)
+  def orbital_term(:mars,  height), do: orbital_term(Planets.mars , height)
+  def orbital_term(:moon,  height), do: orbital_term(Planets.moon , height)
+  def orbital_term(planet, height) do
+    4 * (:math.pi |> squared) * (orbital_radius(planet, height) |> cubed) / (newtons_gravitational_constant * planet.mass)
+      |> square_root
+      |> seconds_to_hours
+  end
+
+  def orbital_term_radius(hours), do: orbital_term_radius(Planets.earth, hours)
+  def orbital_term_radius(:earth, hours), do: orbital_term_radius(Planets.earth, hours)
+  def orbital_term_radius(:mars , hours), do: orbital_term_radius(Planets.mars , hours)
+  def orbital_term_radius(:moon , hours), do: orbital_term_radius(Planets.moon , hours)
+  def orbital_term_radius(planet, hours) do
+    (newtons_gravitational_constant * planet.mass * (4 |> squared) / (4 * :math.pi |> squared))
+      |> cube_root
+  end
+
+  defp orbital_speed(height), do: orbital_speed(Planets.earth, height)
+  defp orbital_speed(planet, height) do
+    newtons_gravitational_constant * planet.mass / orbital_radius(planet, height)
+      |> square_root
+  end
+
+  defp orbital_radius(height), do: orbital_radius(Planets.earth, height)
+  defp orbital_radius(planet, height) do
+    planet.radius + (height |> to_m)
   end
 
   defp calculate_escape(%{mass: mass, radius: radius}) do
-    newtons_constant = 6.67e-11
-    2 * newtons_constant * mass / radius
-      |> :math.sqrt
+    2 * newtons_gravitational_constant * mass / radius
+      |> square_root
   end
 
 end
